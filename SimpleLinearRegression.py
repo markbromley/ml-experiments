@@ -1,4 +1,5 @@
 import math
+import random
 import numpy
 import matplotlib.pyplot as plt
 
@@ -11,7 +12,9 @@ class SimpleLinearRegression(object):
     ROUNDING_LENGTH = 3
 
     def __init__(self, x, y):
+        assert len(x) != 0, "No data supplied."
         assert len(x) == len(y), "Input vector must be same length as target vector"
+
         self._x = sorted(x)
         self._y = sorted(y)
         self._x_mean = self._get_mean(self._x)
@@ -65,6 +68,9 @@ class SimpleLinearRegression(object):
         plt.title(title)
         plt.xlabel("X values")
         plt.ylabel("Y values")
+        axes = plt.gca()
+        axes.set_xlim([self._x[0] - 1, self._x[-1] + 1])
+        axes.set_ylim([self.predict(self._x[0]) - 1, self.predict(self._x[-1]) + 1])
 
         # Original data
         plt.scatter(self._x, self._y)
@@ -95,8 +101,9 @@ class SimpleLinearRegression(object):
 
 if __name__ == "__main__":
     # Fake data
-    x = [1,0,3,9,1]
-    y = [1,2,3,4,4]
+    n = 100
+    x = random.sample(range(1, 1000), n)
+    y = random.sample(range(1, 10000), n)
 
     # Model
     slr = SimpleLinearRegression(x, y)
