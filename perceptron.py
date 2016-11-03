@@ -46,6 +46,7 @@ def parse_data_point(x):
     return data_point, target
 
 def threshold_function(x):
+    """ Step threshold function. """
     return 0 if x < 0 else 1
 
 def show_decision_boundary_plot(w):
@@ -87,17 +88,12 @@ def show_decision_boundary_plot(w):
 
 def train_and_evaluate(eta = 0.6, epochs = 200):
     """
-    # Learning rate
-    # Number of epochs
+    Trains the percepron using the given learning rate (eta) for the given number
+    of epochs.
     """
-    # Initialise the weights
-    # Train the perceptron on the data set
-    # Evaluate the learned values on the test set
 
     # Get the data
     train_set, valid_set, test_set = generate_perceptron_dataset()
-
-
 
     # Initalise weights
     np.random.seed(12)
@@ -106,7 +102,10 @@ def train_and_evaluate(eta = 0.6, epochs = 200):
     # Keep training until the errors in the test set are below the threshold
     acceptable_error_threshold = 5
 
+    # Just a modulo value, for how often to plot error
     error_plot_interval = 1
+
+    # Array to store error percentages per iteration
     error_values = []
     # Check against the test set for errors, keep training until error
     # number below threshold
@@ -123,7 +122,7 @@ def train_and_evaluate(eta = 0.6, epochs = 200):
     return samples, error_values, w
 
 if __name__ == "__main__":
-    # Try different learning rates
+    # Try the different learning rates - currently going from 0.01 to 0.61
     for eta in xrange(1, 61, 10):
         eta *= 0.01 #xrange only allows for integers, so scale down
         samples, error_values, w = train_and_evaluate(eta = eta)
@@ -133,7 +132,11 @@ if __name__ == "__main__":
 
         name = "ETA-"+str(eta)
         plt.plot(samples, error_values, linestyle='-', label=name)
+
+    # Show learning rates
     plt.legend()
     plt.show()
-    if(True):
+
+    show_decision_boundary = True
+    if(show_decision_boundary):
         show_decision_boundary_plot(w)
