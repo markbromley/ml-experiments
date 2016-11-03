@@ -146,6 +146,10 @@ def parse_data_point(x):
     return input_vector, target_vector
 
 def evaluate_weights_on_set(eval_set, weights):
+    """
+    Returns the percentage error for a forward pass on an MLP with the Given
+    weights and given inputs.
+    """
     error = 0.0
     for x in eval_set:
         error += evaluate_mlp(weights, x)[0]
@@ -153,7 +157,10 @@ def evaluate_weights_on_set(eval_set, weights):
     return error
 
 def plot_confusion_matrix(df_confusion, title='Confusion matrix', cmap=plt.cm.gray_r):
-    plt.matshow(df_confusion, cmap=cmap) # imshow
+    """
+    Pots a matplotlib confusion matrix from a pandas dataframe.
+    """
+    plt.matshow(df_confusion, cmap=cmap)
     plt.title(title)
     plt.colorbar()
     tick_marks = np.arange(len(df_confusion.columns))
@@ -211,7 +218,6 @@ if __name__ == "__main__":
         previous_error = cur_error
 
         cur_error = evaluate_weights_on_set(valid_set, weights) * 100
-        print "Prev Err: {}%, Cur Err: {}%".format(str(previous_error),str(cur_error))
 
     error = evaluate_weights_on_set(test_set, optimal_weights)
     print "Total Test Set Error Percentage: {}%".format(str(error * 100))
@@ -242,6 +248,8 @@ if __name__ == "__main__":
     class_3_x2 = []
     class_4_x1 = []
     class_4_x2 = []
+    # Check the predictions for each point and allocate to required matplotlib
+    # arrays as appropriate.
     for x in test_set:
         value_tuple = evaluate_mlp(weights, x)[1]
         predicted_class = value_tuple[1][0]
@@ -260,6 +268,7 @@ if __name__ == "__main__":
         elif(predicted_class == 4):
             class_4_x1.append(x1)
             class_4_x2.append(x2)
+    # Display with the original colour classifications.
     plt.scatter(class_1_x1, class_1_x2, color='red')
     plt.scatter(class_2_x1, class_2_x2, color='blue')
     plt.scatter(class_3_x1, class_3_x2, color = 'green')
