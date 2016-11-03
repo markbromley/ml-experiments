@@ -81,7 +81,7 @@ def show_decision_boundary_plot(w):
     x_list = [x - 4 for x in xrange(11)]
     for x in x_list:
         y_list.append(grad * x + y1)
-    plt.plot(x_list, y_list,linestyle='-')
+    plt.plot(x_list, y_list, linestyle='-')
 
     plt.show()
 
@@ -118,14 +118,17 @@ def train_and_evaluate(eta = 0.6, epochs = 200):
                 if i % error_plot_interval == 0 and n == 0:
                     # Append the percentage error
                     error_values.append(float(evaluate_perceptron(w, test_set)) / float(test_set.shape[0]))
-    samples = [x*error_plot_interval for x in range(len(error_values)) ]
+    samples = [x * error_plot_interval for x in range(len(error_values))]
     return samples, error_values, w
 
 if __name__ == "__main__":
-    samples, error_values, w = train_and_evaluate()
-
-    print error_values
-    plt.scatter(samples, error_values, label="ETA")
+    # Try different learning rates
+    for eta in xrange(1, 61, 10):
+        eta *= 0.01 #xrange only allows for integers, so scale down
+        samples, error_values, w = train_and_evaluate(eta = eta)
+        print len(samples)
+        name = "ETA-"+str(eta)
+        plt.plot(samples[:100], error_values[:100], linestyle='-', label=name)
     plt.legend()
     plt.show()
     if(True):
