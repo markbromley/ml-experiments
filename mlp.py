@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd # Purely for the confusion matrix visualisation
 
 from datasets import generate_dataset
 
@@ -117,9 +118,9 @@ def evaluate_mlp(w, D):
     target_class = target.transpose().argmax(axis=1) + 1
     output_class = l2.argmax(axis=1) + 1
     if target_class != output_class:
-        return 1
+        return 1, (target_class, output_class)
     else:
-        return 0
+        return 0, (target_class, output_class)
 
 
 def parse_data_point(x):
@@ -147,9 +148,19 @@ def parse_data_point(x):
 def evaluate_weights_on_set(eval_set, weights):
     error = 0.0
     for x in eval_set:
-        error += evaluate_mlp(weights, x)
+        error += evaluate_mlp(weights, x)[0]
     error = float(error) / float(len(eval_set))
     return error
+
+def plot_confusion_matrix(df_confusion, title='Confusion matrix', cmap=plt.cm.gray_r):
+    plt.matshow(df_confusion, cmap=cmap) # imshow
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(df_confusion.columns))
+    plt.xticks(tick_marks, df_confusion.columns, rotation=45)
+    plt.yticks(tick_marks, df_confusion.index)
+    plt.ylabel(df_confusion.index.name)
+    plt.xlabel(df_confusion.columns.name)
 
 if __name__ == "__main__":
     # Get the data sets
@@ -206,6 +217,20 @@ if __name__ == "__main__":
     print "Total Test Set Error Percentage: {}%".format(str(error * 100))
 
 
-    # Now display the confusion matrix
+    # Now get the confusion matrix for the test set
+    y_actual = []
+    y_predic = []
+    for x in test_set:
+        value_tuple = evaluate_mlp(weights, x)[1]
+        y_actual.append(value_tuple[0][0])
+        y_predic.append(value_tuple[1][0])
+
+
+    # Display the confusion matrix
+    y_actual = pd.Series(y_actual, name='Actual')
+    y_predic = pd.Series(y_predic, name='Predicted')
+    df_confusion = pd.crosstab(y_actual, y_predic)
+    plot_confusion_matrix(df_confusion)
+    plt.show()
 
     # Now display the assigned data values to the test set by the MLP
