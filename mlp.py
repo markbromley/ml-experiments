@@ -234,3 +234,34 @@ if __name__ == "__main__":
     plt.show()
 
     # Now display the assigned data values to the test set by the MLP
+    class_1_x1 = []
+    class_1_x2 = []
+    class_2_x1 = []
+    class_2_x2 = []
+    class_3_x1 = []
+    class_3_x2 = []
+    class_4_x1 = []
+    class_4_x2 = []
+    for x in test_set:
+        value_tuple = evaluate_mlp(weights, x)[1]
+        predicted_class = value_tuple[1][0]
+        input_vector = parse_data_point(x)[0]
+        x1 = input_vector[0,0]
+        x2 = input_vector[0,1]
+        if(predicted_class == 1):
+            class_1_x1.append(x1)
+            class_1_x2.append(x2)
+        elif(predicted_class == 2):
+            class_2_x1.append(x1)
+            class_2_x2.append(x2)
+        elif(predicted_class == 3):
+            class_3_x1.append(x1)
+            class_3_x2.append(x2)
+        elif(predicted_class == 4):
+            class_4_x1.append(x1)
+            class_4_x2.append(x2)
+    plt.scatter(class_1_x1, class_1_x2, color='red')
+    plt.scatter(class_2_x1, class_2_x2, color='blue')
+    plt.scatter(class_3_x1, class_3_x2, color = 'green')
+    plt.scatter(class_4_x1, class_4_x2, color = 'cyan')
+    plt.show()
