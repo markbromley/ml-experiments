@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 class Dataset(object):
 
     def __init__(self, data):
-        # TODO: Add asserts
         self._data = data
 
     @staticmethod
@@ -14,6 +13,9 @@ class Dataset(object):
                                     y_shift = 1,
                                     label = None, 
                                     data_size = 500):
+        """
+        Returns a dataset with uniform distribution in two dimensions.
+        """
         # Make the set deterministic
         np.random.seed(1)
         data = np.random.rand(data_size, 3)
@@ -31,6 +33,9 @@ class Dataset(object):
                                                 covariance_matrix = ((0,0),(0,0)), 
                                                 data_size = 500,
                                                 label = None):
+        """
+        Returns a dataset with normal distribution in two dimensions.
+        """
         # Make the set deterministic
         np.random.seed(1)
         data_points = np.random.multivariate_normal(mean, covariance_matrix, (data_size))
@@ -41,6 +46,9 @@ class Dataset(object):
 
 
     def rotate(self, theta_degrees = 75):
+        """
+        Returns a rotated version of the current dataset.
+        """
         return_mat = np.zeros_like(self._data)
         rot_mat = self._get_rotation_matrix(theta_degrees)
         return_mat[:,:2] = np.dot(self._data[:,:2], rot_mat.transpose())
@@ -71,10 +79,13 @@ class Dataset(object):
         return self._data
 
 def split_data_set(data_set):
+    """
+    Shuffles and splits the given dataset into training, validation and test
+    datasets.
+    """
     np.random.shuffle(data_set)
     # Split the data into training, validation and test sets
     # Assumes number of samples multiple of 4
-    # TODO: Add asserts
     train_ratio, validation_ratio, test_ratio = 0.5, 0.25, 0.25
     train_split = data_set.shape[0] * train_ratio
     validation_split = data_set.shape[0] * validation_ratio
@@ -157,5 +168,3 @@ def generate_dataset(show_plot = False):
 
 if __name__ == "__main__":
     generate_dataset(show_plot = True)
-
-
