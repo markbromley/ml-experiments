@@ -1,11 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from datasets import generate_dataset, Dataset
-
+from datasets import generate_dataset
 
 class ActivationFunction(object):
-
+    """
+    Represents the activation function for a particular unit.
+    Currently implements Hyperbolic Tangent and Sigmoid functions.
+    To call the function on input vector x, simply call function() member. 
+    Derivative can be called similarly with derivative().
+    """
+    # Static types
     TANH = 1
     SIGMOID = 2
 
@@ -13,6 +18,9 @@ class ActivationFunction(object):
         self.act_type = act_type
 
     def function(self, x):
+        """
+        Returns the evaluated activation function on the input vector x.
+        """
         if self.act_type == ActivationFunction.TANH:
             return self._tanh(x)
         elif self.act_type == ActivationFunction.SIGMOID:
@@ -21,6 +29,10 @@ class ActivationFunction(object):
             raise Exception("Unrecognised function.")
 
     def derivative(self, x):
+        """
+        Returns the evaluated derivative of the activation function on the input
+        vector x.
+        """
         if self.act_type == ActivationFunction.TANH:
             return self._tanh_deriv(x)
         elif self.act_type == ActivationFunction.SIGMOID:
@@ -42,11 +54,14 @@ class ActivationFunction(object):
 
 
 def train_mlp(w, D, eta = 0.2, h = 5):
-    # Network topology
-    # 2 input units + 1 bias
-    # h hidden units
-    # 4 output units
+    """
+    Given a set of weight matrices (1 for the synaptic connections between each
+    layer), and a new input vector/ target vector pair D and learning rate eta,
+    updates the weight matrices to reflect evidence from the new training sample.
 
+    Note, the number of hidden units is not necessary as this is implicit in the
+    dimensionality of the weight matrices.
+    """
     # Get the weight matrices
     weight_matrix_1, weight_matrix_2 = w[0], w[1]
 
@@ -77,6 +92,13 @@ def train_mlp(w, D, eta = 0.2, h = 5):
 
 
 def evaluate_mlp(w, D, h):
+    """
+    Given a set of weight matrices (1 for the synaptic connections between each
+    layer), and a new input vector/ target vector pair D, evaluates if the resulting
+    MLP output corresponds to that of the target vector.
+
+    Takes the unit activated the most in the output layer as the network's output.
+    """
     # Get the weights
     weight_matrix_1, weight_matrix_2 = w[0], w[1]
 
@@ -90,19 +112,23 @@ def evaluate_mlp(w, D, h):
     l0 = l0_in
     l1 = activation_function.function(np.dot(l0, weight_matrix_1))
     l2 = activation_function.function(np.dot(l1, weight_matrix_2))
+
+    # Compare the target class to the output class
     target_class = target.transpose().argmax(axis=1) + 1
     output_class = l2.argmax(axis=1) + 1
     if target_class != output_class:
         return 1
     else:
         return 0
-    #if(target.transpose() - l2) != 0 :
 
 
 def parse_data_point(x):
     """ 
-    Normalises the data, so that classes lie between 0 and 1. Adds an
-    additional input value - the bias, always 1.
+    Takes a Dataset data point x and parses into the required format for the MLP.
+
+    Outputs an input vector, with additional bias column (always 1), and a target 
+    vector representing the output class e.g. output class = 3, produces target 
+    vector [0,0,1,0].
     """
    # Add the bias to the input vector
     input_vector = np.zeros((3,1))
@@ -120,32 +146,38 @@ def parse_data_point(x):
 
 
 if __name__ == "__main__":
+    # Get the data sets
     train_set, valid_set, test_set = generate_dataset(False)
 
+    # Number of epochs
     number_of_epochs = 50
+
+    # Number of hidden layers
     h = 4   
+    
+    # Network topology:
+    # 2 input units + 1 bias = 3 units
+    # h hidden units
+    # 4 output units (1 per class)
+
+    # Make the calculations deterministic
     np.random.seed(1)
+
     # Initialise weights randomly
     # weight matrix 1 = 3 * h
     # weight matrix 2 = h * 4
     weight_matrix_1 = np.random.uniform(low = -0.5, high = 0.5, size = 3 * h).reshape((3,h))
     weight_matrix_2 = np.random.uniform(low = -0.5, high = 0.5, size = 4 * h).reshape((h,4))
 
+    # For each sample in the training set, train the MLP. Repeat every epoch.
     weights = [weight_matrix_1, weight_matrix_2]
     for n in xrange(number_of_epochs):
         for x in train_set:
             weights = train_mlp(weights, x, eta = 0.04, h = 5)
 
+    # Now count the number of mis-classifications based on the test set
     error = 0
-    for x in train_set:
+    for x in test_set:
         error += evaluate_mlp(weights, x, 999)
-    error = float(error)/float(len(train_set))
-    print "Total Errors: {}%".format(str(error * 100))
-    # data_point = np.zeros((3,1))
-    # data_point[:2,0] = x[:2]
-    # data_point[2,0] = 1
-    # print data_point.transpose()
-    # print x[2]
-    # target_vector = np.zeros((4,1))
-    # target_vector[int(x[2]) - 1] = 1
-    # print target_vector
+    error = float(error) / float(len(test_set))
+    print "Total Error Percentage: {}%".format(str(error * 100))
