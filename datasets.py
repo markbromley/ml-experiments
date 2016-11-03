@@ -14,6 +14,8 @@ class Dataset(object):
                                     y_shift = 1,
                                     label = None, 
                                     data_size = 500):
+        # Make the set deterministic
+        np.random.seed(1)
         data = np.random.rand(data_size, 3)
         data[:,0] *= x_scale
         data[:,1] *= y_scale
@@ -29,6 +31,8 @@ class Dataset(object):
                                                 covariance_matrix = ((0,0),(0,0)), 
                                                 data_size = 500,
                                                 label = None):
+        # Make the set deterministic
+        np.random.seed(1)
         data_points = np.random.multivariate_normal(mean, covariance_matrix, (data_size))
         data = np.zeros((data_size, 3))
         data[:,:2] = data_points
@@ -82,6 +86,10 @@ def split_data_set(data_set):
     return training_set, validation_set, test_set
 
 def generate_perceptron_dataset():
+    """
+    Provides a train/ validation/ test set for the perceptron model e.g.
+    only the classes that are linearly separable.
+    """
     # Create the uniform distributions
     class_one = Dataset.create_uniform_distribution(x_scale = 3, 
                                                     y_scale = 3, 
@@ -102,6 +110,10 @@ def generate_perceptron_dataset():
 
 
 def generate_dataset(show_plot = False):
+    """
+    Provides a train/ validation/ test set for the perceptron model e.g.
+
+    """
     # Create the uniform distributions
     class_one = Dataset.create_uniform_distribution(x_scale = 3, 
                                                     y_scale = 3, 
@@ -142,8 +154,6 @@ def generate_dataset(show_plot = False):
         plt.scatter(class_four.x1, class_four.x2, color = 'cyan')
         plt.show()
     return training_set, validation_set, test_set
-
-
 
 if __name__ == "__main__":
     generate_dataset(show_plot = True)
