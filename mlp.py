@@ -71,7 +71,7 @@ def train_mlp(w, D, eta = 0.2, h = 5):
     # For now, just use same sigmoid function for all units (easily changed below)
     activation_function = ActivationFunction(ActivationFunction.SIGMOID)
 
-    # Do the forward pass
+    # Do the forward pass through layers 0, 1, 2
     l0 = l0_in
     l1 = activation_function.function(np.dot(l0, weight_matrix_1))
     l2 = activation_function.function(np.dot(l1, weight_matrix_2))
@@ -91,7 +91,7 @@ def train_mlp(w, D, eta = 0.2, h = 5):
     return [weight_matrix_1, weight_matrix_2]
 
 
-def evaluate_mlp(w, D, h):
+def evaluate_mlp(w, D):
     """
     Given a set of weight matrices (1 for the synaptic connections between each
     layer), and a new input vector/ target vector pair D, evaluates if the resulting
@@ -144,21 +144,28 @@ def parse_data_point(x):
 
     return input_vector, target_vector
 
+def evaluate_weights_on_set(eval_set, weights):
+    error = 0.0
+    for x in eval_set:
+        error += evaluate_mlp(weights, x)
+    error = float(error) / float(len(eval_set))
+    return error
 
 if __name__ == "__main__":
     # Get the data sets
     train_set, valid_set, test_set = generate_dataset(False)
 
     # Number of epochs
-    number_of_epochs = 50
-
-    # Number of hidden layers
-    h = 4   
+    number_of_epochs = 5
     
     # Network topology:
     # 2 input units + 1 bias = 3 units
     # h hidden units
     # 4 output units (1 per class)
+    input_layer_size = 3
+    # Number of hidden layers
+    h = 6   
+    output_layer_size = 4
 
     # Make the calculations deterministic
     np.random.seed(1)
@@ -166,18 +173,39 @@ if __name__ == "__main__":
     # Initialise weights randomly
     # weight matrix 1 = 3 * h
     # weight matrix 2 = h * 4
-    weight_matrix_1 = np.random.uniform(low = -0.5, high = 0.5, size = 3 * h).reshape((3,h))
-    weight_matrix_2 = np.random.uniform(low = -0.5, high = 0.5, size = 4 * h).reshape((h,4))
+    weight_matrix_1 = np.random.uniform(low = -0.5, high = 0.5, size = input_layer_size * h).reshape((input_layer_size,h))
+    weight_matrix_2 = np.random.uniform(low = -0.5, high = 0.5, size = output_layer_size * h).reshape((h,output_layer_size))
+
 
     # For each sample in the training set, train the MLP. Repeat every epoch.
     weights = [weight_matrix_1, weight_matrix_2]
-    for n in xrange(number_of_epochs):
-        for x in train_set:
-            weights = train_mlp(weights, x, eta = 0.04, h = 5)
 
-    # Now count the number of mis-classifications based on the test set
-    error = 0
-    for x in test_set:
-        error += evaluate_mlp(weights, x, 999)
-    error = float(error) / float(len(test_set))
-    print "Total Error Percentage: {}%".format(str(error * 100))
+    # Keep a track of the error on the validation set as we train, stop if 
+    # it starts to go up
+    previous_error = float('inf')
+    cur_error = previous_error
+
+    while previous_error >= cur_error:
+        # Also keep a track of the previous weights - we'll only know that we've started
+        # to overfit, once we've updated the weights, at that stage we'll want the 
+        # weights from the previous iteration
+        if(cur_error <= previous_error):
+            optimal_weights = np.copy(weights)  
+        
+        for n in xrange(number_of_epochs):
+            for x in train_set:
+                weights = train_mlp(weights, x, eta = 0.03, h = 5)
+
+        # Update the error for the validation set on the new weights
+        previous_error = cur_error
+
+        cur_error = evaluate_weights_on_set(valid_set, weights) * 100
+        print "Prev Err: {}%, Cur Err: {}%".format(str(previous_error),str(cur_error))
+
+    error = evaluate_weights_on_set(test_set, optimal_weights)
+    print "Total Test Set Error Percentage: {}%".format(str(error * 100))
+
+
+    # Now display the confusion matrix
+
+    # Now display the assigned data values to the test set by the MLP
