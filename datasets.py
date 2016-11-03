@@ -66,6 +66,41 @@ class Dataset(object):
     def raw_data(self):
         return self._data
 
+def split_data_set(data_set):
+    np.random.shuffle(data_set)
+    # Split the data into training, validation and test sets
+    # Assumes number of samples multiple of 4
+    # TODO: Add asserts
+    train_ratio, validation_ratio, test_ratio = 0.5, 0.25, 0.25
+    train_split = data_set.shape[0] * train_ratio
+    validation_split = data_set.shape[0] * validation_ratio
+    test_split = data_set.shape[0] * test_ratio
+
+    training_set = data_set[:train_split, :]
+    validation_set = data_set[:validation_split, :]
+    test_set = data_set[:test_split, :]
+    return training_set, validation_set, test_set
+
+def generate_perceptron_dataset():
+    # Create the uniform distributions
+    class_one = Dataset.create_uniform_distribution(x_scale = 3, 
+                                                    y_scale = 3, 
+                                                    x_shift = 2, 
+                                                    y_shift = 1,
+                                                    label = 1).rotate(75)
+
+    class_two = Dataset.create_uniform_distribution(x_scale = 2, 
+                                                    y_scale = 4, 
+                                                    x_shift = 1, 
+                                                    y_shift = -5,
+                                                    label = 2).rotate(75)
+    all_data = np.concatenate((class_one.raw_data,
+                       class_two.raw_data),
+                      axis=0)
+    return split_data_set(all_data)
+
+
+
 def generate_dataset(show_plot = False):
     # Create the uniform distributions
     class_one = Dataset.create_uniform_distribution(x_scale = 3, 
@@ -98,19 +133,7 @@ def generate_dataset(show_plot = False):
                    class_three.raw_data,
                    class_four.raw_data),
                   axis=0)
-    np.random.shuffle(all_data)
-
-    # Split the data into training, validation and test sets
-    # Assumes number of samples multiple of 4
-    # TODO: Add asserts
-    train_ratio, validation_ratio, test_ratio = 0.5, 0.25, 0.25
-    train_split = all_data.shape[0] * train_ratio
-    validation_split = all_data.shape[0] * validation_ratio
-    test_split = all_data.shape[0] * test_ratio
-
-    training_set = all_data[:train_split, :]
-    validation_set = all_data[:validation_split, :]
-    test_set = all_data[:test_split, :]
+    training_set, validation_set, test_set = split_data_set(all_data)
 
     if(show_plot):
         plt.scatter(class_one.x1, class_one.x2, color='red')
@@ -119,6 +142,8 @@ def generate_dataset(show_plot = False):
         plt.scatter(class_four.x1, class_four.x2, color = 'cyan')
         plt.show()
     return training_set, validation_set, test_set
+
+
 
 if __name__ == "__main__":
     generate_dataset(show_plot = True)
