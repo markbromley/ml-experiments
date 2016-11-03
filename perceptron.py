@@ -100,6 +100,7 @@ def train_and_evaluate(eta = 0.6, epochs = 200):
 
 
     # Initalise weights
+    np.random.seed(12)
     w = np.random.uniform(low = -0.5, high = 0.5, size = 3)
 
     # Keep training until the errors in the test set are below the threshold
@@ -126,9 +127,12 @@ if __name__ == "__main__":
     for eta in xrange(1, 61, 10):
         eta *= 0.01 #xrange only allows for integers, so scale down
         samples, error_values, w = train_and_evaluate(eta = eta)
-        print len(samples)
+
+        # Accuracy is 1 minus percentage of errors in final iteration
+        print "Learning Rate: {}, Accuracy: {}%".format(str(eta), str((1 - error_values[-1])*100))
+
         name = "ETA-"+str(eta)
-        plt.plot(samples[:100], error_values[:100], linestyle='-', label=name)
+        plt.plot(samples, error_values, linestyle='-', label=name)
     plt.legend()
     plt.show()
     if(True):
