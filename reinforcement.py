@@ -3,8 +3,9 @@ try:
 except Exception as e:
     from aenum import Enum
 
+import matplotlib.pyplot as plt
 import random
-
+import copy
 
 class StateType(object):
     """
@@ -116,8 +117,8 @@ class ActionValueFunction(object):
     def update_action(self, state, action, reward):
         """
         """
-        if state == (0,1) and action == Actions.right:
-            print "Reward: {}".format(str(reward))
+        # if state == (0,1) and action == Actions.right:
+        #     print "Reward after update: {}".format(str(reward))
         if not state in self._action_val_fun:
             self.add_state(state)
         # print self._action_val_fun[state]
@@ -165,9 +166,11 @@ class World(object):
         we're interested in.
         cell_coord is the (x,y) coordinate.
         """
+        print "State Value: {}".format(str(state_type.value))
         self._world[cell_coord[0]][cell_coord[1]] = state_type.value
 
     def get_reward_in_cell(self, cell_coord):
+        # print "Reward in cell: {}".format(str(self._world[cell_coord[0]][cell_coord[1]]))
         return self._world[cell_coord[0]][cell_coord[1]]
 
     @property
@@ -196,10 +199,11 @@ class World(object):
 
 def env_move_det(s, a):
     flag = False
-    if s.state == (0,1) and a == Actions.right:
-        flag = True
-        print "Test"
-        print "Width: {}".format(str(s.width))
+    s = copy.copy(s)
+    # if s.state == (0,1) and a == Actions.right:
+    #     flag = True
+    #     print "Test"
+    #     print "Width: {}".format(str(s.width))
     if a == Actions.up:
         # Go up if we're not already at the top
         if s.state[0] > 0:
@@ -215,11 +219,11 @@ def env_move_det(s, a):
     elif a == Actions.right:
         # Go right if we're not already at far right
         if s.state[1] < s.width - 1:
-            if flag:
-                print "S State: {}".format(str((s.state[0], s.state[1] + 1)))
+            # if flag:
+            #     print "S State: {}".format(str((s.state[0], s.state[1] + 1)))
             s.state = (s.state[0], s.state[1] + 1)
-    if flag:
-        print "Should be: {}".format(str(s.state))
+    # if flag:
+    #     print "Should be: {}".format(str(s.state))
     return s
 
 def env_move_sto(s, a):
@@ -271,21 +275,27 @@ def agt_learn_sarsa(alpha, s, a, r, next_s, next_a, action_val_function, gamma =
     action_val_function.update_action(s.state, a, new_expected_reward)
 
 def agt_learn_q(alpha, s, a, r, next_s, action_val_function, gamma = 0.99):
+    action_val_function = copy.copy(action_val_function)
     best_next_action = action_val_function.get_best_next_action(next_s.state)
-    new_expected_reward = ((1 - alpha) * action_val_function.get_expected_reward_value(s.state, a)) \
-    + alpha * (r + gamma * (action_val_function.get_expected_reward_value(next_s.state, best_next_action)))
+    # print "Best next action for {} is {}".format(str(next_s.state), str(best_next_action))
+    q_state = action_val_function.get_expected_reward_value(s.state, a)
+    q_state_next = action_val_function.get_expected_reward_value(next_s.state, best_next_action)
+    new_expected_reward = ((1 - alpha) * q_state) + alpha * (r + gamma * (q_state_next))
+    # print "Old Reward: {} New Reward: {}".format(str(r), str(new_expected_reward))
+    # print "1-a: {}, q_state: {}".format(str((1 - alpha)), str(q_state))
     action_val_function.update_action(s.state, a, new_expected_reward)
     #print "New expected reward: {}".format(str(new_expected_reward))
     return action_val_function
 
 def agt_learn_final(alpha, s, a, r, action_val_function):
-    new_expected_reward = ((1 - alpha) * action_val_function.get_expected_reward_value(s.state, a)) \
-    + alpha * (r)
+    # action_val_function = copy.copy(action_val_function)
+    # q_state = action_val_function.get_expected_reward_value(s.state, a)
+    new_expected_reward = ((1 - alpha) * 0) + alpha * (r)
     action_val_function.update_action(s.state, a, new_expected_reward)
     return action_val_function
 
 def agt_reset_value(world, action_val_function):
-    optimistic_val = 100
+    optimistic_val = 150
     for i in range(world.width - 1):
         for j in range(world.height -1):
             action_val_function.add_state((i,j),{Actions.up:    optimistic_val, 
@@ -293,27 +303,26 @@ def agt_reset_value(world, action_val_function):
                                                  Actions.right: optimistic_val,
                                                  Actions.left:  optimistic_val})
 
-
 if __name__ == "__main__":
     # Create the world
-    size_s = 3*3
-    s = World(width = 3, height = 3)
-    s.add_statetype_to_cell((0,2), StateType(StateType.FIRE))
-    #s.add_statetype_to_cell((3,3), StateType(StateType.BLACK_HOLE))
+    size_s = 4*4
+    s = World(width = 4, height = 4)
+    # s.add_statetype_to_cell((0,2), StateType(StateType.FIRE))
+    s.add_statetype_to_cell((1,1), StateType(StateType.BLACK_HOLE))
     s.add_statetype_to_cell((2,2), StateType(StateType.TREASURE))
     print s # initial state
 
 
     avf = ActionValueFunction()
 
-    EPOCHS = 100
-    EPISODES = 100
-    EPSILON = 0.8
+    EPOCHS = 500
+    EPISODES = 500
+    EPSILON = 0.1
     T = size_s
     ALPHA = 0.1
     GAMMA = 0.99
     # Clear reward array
-    rewards = [0 for episode in range(EPISODES)]
+    rewards = [0.0 for episode in range(EPISODES)]
     for epochs in range(EPOCHS):
         agt_reset_value(s, avf)
         for episode in range(EPISODES):
@@ -330,12 +339,13 @@ if __name__ == "__main__":
             #print not a == Actions.up
 
             for timestep in range(T):
-                print "State: {}".format(str(s.state))
+                # print "State: {}".format(str(s.state))
                 next_s = env_move_det(s,a)
                 # print "Next State: {}".format(str(next_s.state))
                 r = env_reward(s, a, next_s)
-                if s.state == (0,1) and a == Actions.right:
-                    print "Reward: {}, State {}, Next state: {}".format(str(r),str(s.state),str(next_s.state))
+                # print "ENV RE: {}".format(str(r))
+                # if s.state == (0,1) and a == Actions.right:
+                    # print "Reward: {}, State {}, Action: {}, Next state: {}".format(str(r),str(s.state),str(a == Actions.right), str(next_s.state))
                 # print "R: {}".format(str(r))
                 # if next_s.state == (4,4):
                 #     print "Whoop!"
@@ -343,15 +353,27 @@ if __name__ == "__main__":
                 rewards[episode] += float(cumulative_gamma * r) / float(EPOCHS)
                 cumulative_gamma *= GAMMA
                 next_a = agt_choose(next_s, eps, avf)
+
+                # Update while learning
                 if(learning):
                     if(next_s.get_reward_in_cell(next_s.state) == 100 or
                        next_s.get_reward_in_cell(next_s.state) == -100 or
                        timestep == T - 1):
                         avf = agt_learn_final(ALPHA, s, a, r, avf)
+                        break
                     else:
+                        # print "REWARD: {}".format(str(r))
                         avf = agt_learn_q(ALPHA, s, a, r, next_s, avf)
                     a = next_a
                     s = next_s
-                # print avf.get_expected_reward_value((0,1), Actions.right)
+
+                # Absorbing state, even after learning
+                if(next_s.get_reward_in_cell(next_s.state) == 100 or
+                       next_s.get_reward_in_cell(next_s.state) == -100 or
+                       timestep == T - 1):
+                    break
+                #print avf.get_expected_reward_value((0,1), Actions.right)
 
     print rewards
+    plt.plot(rewards)
+    plt.show()
