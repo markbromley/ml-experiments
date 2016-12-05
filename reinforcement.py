@@ -6,6 +6,7 @@ except Exception as e:
 import matplotlib.pyplot as plt
 import random
 import copy
+import pickle
 
 class StateType(object):
     """
@@ -292,12 +293,11 @@ def learning_procedure(learning = "sarsa",
                        gamma = 0.99, 
                        epochs = 500,
                        episodes = 500):
-    pass
-
-if __name__ == "__main__":
     # Create the world
-    size_s = 4*4
-    s = World(width = 4, height = 4)
+    world_width = 4
+    world_height = 4
+    size_s = world_width * world_height
+    s = World(width = world_width, height = world_height)
     # s.add_statetype_to_cell((0,2), StateType(StateType.FIRE))
     s.add_statetype_to_cell((1,1), StateType(StateType.BLACK_HOLE))
     s.add_statetype_to_cell((2,2), StateType(StateType.TREASURE))
@@ -306,14 +306,21 @@ if __name__ == "__main__":
 
     avf = ActionValueFunction()
 
-    EPOCHS = 500
-    EPISODES = 500
-    EPSILON = 0.1
+    EPOCHS = epochs
+    EPISODES = episodes
+    EPSILON = epsilon
     T = size_s
-    ALPHA = 0.1
-    GAMMA = 0.99
-    learning_is_sarsa = True
-    learning_is_deterministic = False
+    ALPHA = alpha
+    GAMMA = gamma
+
+    # Assume only SARSA and Q-Learning for now
+    if learning == "sarsa":
+        learning_is_sarsa = True
+    else:
+        learning_is_sarsa = False
+
+    # Apply deterministic action updates
+    learning_is_deterministic = deterministic
 
     # Clear reward array
     rewards = [0.0 for episode in range(EPISODES)]
@@ -363,6 +370,49 @@ if __name__ == "__main__":
                        timestep == T - 1):
                     break
 
-    print rewards
-    plt.plot(rewards)
+    return rewards
+
+def run_experiment_on_learning_variations(epsilon = 0.1, alpha = 0.1):
+    """
+    Shows plot for complete experiment.
+    """
+    rewards_s_d = learning_procedure(learning = "sarsa", deterministic = True, 
+        epsilon = epsilon, alpha = alpha)
+    rewards_s_s = learning_procedure(learning = "sarsa", deterministic = False, 
+        epsilon = epsilon, alpha = alpha)
+    rewards_q_d = learning_procedure(learning = "q-learn", deterministic = True, 
+        epsilon = epsilon, alpha = alpha)
+    rewards_q_s = learning_procedure(learning = "q-learn", deterministic = False, 
+        epsilon = epsilon, alpha = alpha)
+
+    plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    plt.ylabel('Reward')
+    plt.xlabel('Episode')
     plt.show()
+
+    plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    plt.ylabel('Reward')
+    plt.xlabel('Episode')
+    plt.show()
+
+    plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    plt.ylabel('Reward')
+    plt.xlabel('Episode')
+    plt.show()
+
+    all_results = [rewards_s_d, rewards_s_s, rewards_q_d, rewards_q_s]
+    title = str(epsilon) + "-" + str(alpha)
+    with open('results-' + title + '.txt', 'wb') as fp:
+        pickle.dump(itemlist, fp)
+
+if __name__ == "__main__":
+
+    # Experiments
+    run_experiment_on_learning_variations(epsilon = 0.1, alpha = 0.1)
+    run_experiment_on_learning_variations(epsilon = 1, alpha = 1)
+
