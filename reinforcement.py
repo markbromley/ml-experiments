@@ -289,18 +289,21 @@ def agt_reset_value(world, action_val_function):
 def learning_procedure(learning = "sarsa", 
                        deterministic = True, 
                        epsilon = 0.1, 
-                       alpha = 0.1, 
+                       alpha = 0.1,
+                       epsilon_dynamic = False,
                        gamma = 0.99, 
                        epochs = 500,
                        episodes = 500):
     # Create the world
-    world_width = 4
-    world_height = 4
+    world_width = 6
+    world_height = 5
     size_s = world_width * world_height
     s = World(width = world_width, height = world_height)
-    # s.add_statetype_to_cell((0,2), StateType(StateType.FIRE))
-    s.add_statetype_to_cell((1,1), StateType(StateType.BLACK_HOLE))
-    s.add_statetype_to_cell((2,2), StateType(StateType.TREASURE))
+    s.add_statetype_to_cell((2,1), StateType(StateType.FIRE))
+    s.add_statetype_to_cell((5,1), StateType(StateType.BLACK_HOLE))
+    s.add_statetype_to_cell((1,3), StateType(StateType.BLACK_HOLE))
+    s.add_statetype_to_cell((2,3), StateType(StateType.FIRE))
+    s.add_statetype_to_cell((5,4), StateType(StateType.TREASURE))
     print s # initial state
 
 
@@ -312,6 +315,8 @@ def learning_procedure(learning = "sarsa",
     T = size_s
     ALPHA = alpha
     GAMMA = gamma
+    epsilon_dynamic = epsilon_dynamic
+
 
     # Assume only SARSA and Q-Learning for now
     if learning == "sarsa":
@@ -332,8 +337,10 @@ def learning_procedure(learning = "sarsa",
 
             # learning = True
             # print learning
-
-            eps = EPSILON if learning else 0
+            if epsilon_dynamic:
+                eps = 1.0 - float(episode) / float(EPISODES)
+            else:
+                eps = EPSILON if learning else 0
             cumulative_gamma = 1
             # initial state done above
             a = agt_choose(s, eps, avf)
@@ -385,24 +392,28 @@ def run_experiment_on_learning_variations(epsilon = 0.1, alpha = 0.1):
     rewards_q_s = learning_procedure(learning = "q-learn", deterministic = False, 
         epsilon = epsilon, alpha = alpha)
 
-    plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
-    plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    line_1 = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    line_2 = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
     plt.ylabel('Reward')
     plt.xlabel('Episode')
+    plt.legend(handles=[line_1, line_2])
     plt.show()
 
-    plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
-    plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    
+    line_3 = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    line_4 = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
     plt.ylabel('Reward')
     plt.xlabel('Episode')
+    plt.legend(handles=[line_3, line_4])
     plt.show()
 
-    plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
-    plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
-    plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
-    plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    line_5 = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    line_6 = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    line_7 = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    line_8 = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
     plt.ylabel('Reward')
     plt.xlabel('Episode')
+    plt.legend(handles=[line_5, line_6, line_7, line_8])
     plt.show()
 
     all_results = [rewards_s_d, rewards_s_s, rewards_q_d, rewards_q_s]
@@ -410,9 +421,52 @@ def run_experiment_on_learning_variations(epsilon = 0.1, alpha = 0.1):
     with open('results-' + title + '.txt', 'wb') as fp:
         pickle.dump(itemlist, fp)
 
+def run_experiment_epsilon_dynamic(alpha = 0.05):
+    """
+    Shows plot for complete experiment.
+    """
+    rewards_s_d = learning_procedure(learning = "sarsa", deterministic = True, 
+        alpha = alpha, epsilon_dynamic = True)
+    rewards_s_s = learning_procedure(learning = "sarsa", deterministic = False, 
+        alpha = alpha, epsilon_dynamic = True)
+    rewards_q_d = learning_procedure(learning = "q-learn", deterministic = True, 
+        alpha = alpha, epsilon_dynamic = True)
+    rewards_q_s = learning_procedure(learning = "q-learn", deterministic = False, 
+        alpha = alpha, epsilon_dynamic = True)
+
+    line_1 = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    line_2 = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    plt.ylabel('Reward')
+    plt.xlabel('Episode')
+    plt.legend(handles=[line_1, line_2])
+    plt.show()
+
+    
+    line_3 = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    line_4 = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    plt.ylabel('Reward')
+    plt.xlabel('Episode')
+    plt.legend(handles=[line_3, line_4])
+    plt.show()
+
+    line_5 = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    line_6 = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    line_7 = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    line_8 = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    plt.ylabel('Reward')
+    plt.xlabel('Episode')
+    plt.legend(handles=[line_5, line_6, line_7, line_8])
+    plt.show()
+    
+    all_results = [rewards_s_d, rewards_s_s, rewards_q_d, rewards_q_s]
+    title = str(epsilon) + "-" + str(alpha)
+    with open('results-epsilon-dynamic-' + title + '.txt', 'wb') as fp:
+        pickle.dump(itemlist, fp)
+
 if __name__ == "__main__":
 
     # Experiments
     run_experiment_on_learning_variations(epsilon = 0.1, alpha = 0.1)
     run_experiment_on_learning_variations(epsilon = 1, alpha = 1)
+    run_experiment_epsilon_dynamic(alpha = 0.05)
 
