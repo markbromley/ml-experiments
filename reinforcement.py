@@ -408,37 +408,37 @@ def run_experiment_on_learning_variations(epsilon = 0.1, alpha = 0.1):
     """
     Shows plot for complete experiment.
     """
-    rewards_s_d = learning_procedure(learning = "sarsa", deterministic = True, 
+    rewards_s_d, x = learning_procedure(learning = "sarsa", deterministic = True, 
         epsilon = epsilon, alpha = alpha)
-    rewards_s_s = learning_procedure(learning = "sarsa", deterministic = False, 
+    rewards_s_s, x = learning_procedure(learning = "sarsa", deterministic = False, 
         epsilon = epsilon, alpha = alpha)
-    rewards_q_d = learning_procedure(learning = "q-learn", deterministic = True, 
+    rewards_q_d, x = learning_procedure(learning = "q-learn", deterministic = True, 
         epsilon = epsilon, alpha = alpha)
-    rewards_q_s = learning_procedure(learning = "q-learn", deterministic = False, 
+    rewards_q_s, x = learning_procedure(learning = "q-learn", deterministic = False, 
         epsilon = epsilon, alpha = alpha)
 
-    line_1 = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
-    line_2 = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    line_1, = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    line_2, = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
     plt.ylabel('Reward')
     plt.xlabel('Episode')
-    plt.legend(handles=[line_1, line_2])
+    plt.legend(handles=[line_1, line_2], loc=4)
     plt.show()
 
     
-    line_3 = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
-    line_4 = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    line_3, = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    line_4, = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
     plt.ylabel('Reward')
     plt.xlabel('Episode')
-    plt.legend(handles=[line_3, line_4])
+    plt.legend(handles=[line_3, line_4], loc=4)
     plt.show()
 
-    line_5 = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
-    line_6 = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
-    line_7 = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
-    line_8 = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    line_5, = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    line_6, = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    line_7, = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    line_8, = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
     plt.ylabel('Reward')
     plt.xlabel('Episode')
-    plt.legend(handles=[line_5, line_6, line_7, line_8])
+    plt.legend(handles=[line_5, line_6, line_7, line_8], loc=4)
     plt.show()
 
     all_results = [rewards_s_d, rewards_s_s, rewards_q_d, rewards_q_s]
@@ -450,37 +450,37 @@ def run_experiment_epsilon_dynamic(alpha = 0.05):
     """
     Shows plot for complete experiment.
     """
-    rewards_s_d = learning_procedure(learning = "sarsa", deterministic = True, 
+    rewards_s_d, x = learning_procedure(learning = "sarsa", deterministic = True, 
         alpha = alpha, epsilon_dynamic = True)
-    rewards_s_s = learning_procedure(learning = "sarsa", deterministic = False, 
+    rewards_s_s, x = learning_procedure(learning = "sarsa", deterministic = False, 
         alpha = alpha, epsilon_dynamic = True)
-    rewards_q_d = learning_procedure(learning = "q-learn", deterministic = True, 
+    rewards_q_d, x = learning_procedure(learning = "q-learn", deterministic = True, 
         alpha = alpha, epsilon_dynamic = True)
-    rewards_q_s = learning_procedure(learning = "q-learn", deterministic = False, 
+    rewards_q_s, x = learning_procedure(learning = "q-learn", deterministic = False, 
         alpha = alpha, epsilon_dynamic = True)
 
-    line_1 = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
-    line_2 = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    line_1, = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    line_2, = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
     plt.ylabel('Reward')
     plt.xlabel('Episode')
-    plt.legend(handles=[line_1, line_2])
+    plt.legend(handles=[line_1, line_2], loc=4)
     plt.show()
 
     
-    line_3 = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
-    line_4 = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    line_3, = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    line_4, = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
     plt.ylabel('Reward')
     plt.xlabel('Episode')
-    plt.legend(handles=[line_3, line_4])
+    plt.legend(handles=[line_3, line_4], loc=4)
     plt.show()
 
-    line_5 = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
-    line_6 = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
-    line_7 = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
-    line_8 = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
+    line_5, = plt.plot(rewards_s_d, label='SARSA Deterministic', lw=1, color='g')
+    line_6, = plt.plot(rewards_s_s, label='SARSA Stochastic', lw=1, color='r')
+    line_7, = plt.plot(rewards_q_d, label='Q-Learning Deterministic', lw=1, color='b')
+    line_8, = plt.plot(rewards_q_s, label='Q-Learning Stochastic', lw=1, color='k')
     plt.ylabel('Reward')
     plt.xlabel('Episode')
-    plt.legend(handles=[line_5, line_6, line_7, line_8])
+    plt.legend(handles=[line_5, line_6, line_7, line_8], loc=4)
     plt.show()
 
     all_results = [rewards_s_d, rewards_s_s, rewards_q_d, rewards_q_s]
@@ -500,13 +500,13 @@ def run_experiment_initial_action_value():
     left = init_action_vals[2]
     right =init_action_vals[3]
 
-    line_1 = plt.plot(up, label='Up', lw=1, color='g')
-    line_2 = plt.plot(down, label='Down', lw=1, color='r')
-    line_3 = plt.plot(left, label='Left', lw=1, color='b')
-    line_4 = plt.plot(right, label='Right', lw=1, color='k')
+    line_1, = plt.plot(up, label='Up', lw=1, color='g')
+    line_2, = plt.plot(down, label='Down', lw=1, color='r')
+    line_3, = plt.plot(left, label='Left', lw=1, color='b')
+    line_4, = plt.plot(right, label='Right', lw=1, color='k')
     plt.ylabel('Initial State Value Function Action')
     plt.xlabel('Episode')
-    plt.legend(handles=[line_1, line_2, line_3, line_4])
+    plt.legend(handles=[line_1, line_2, line_3, line_4], loc=4)
     plt.show()
 
 if __name__ == "__main__":
@@ -516,4 +516,5 @@ if __name__ == "__main__":
     run_experiment_on_learning_variations(epsilon = 1, alpha = 1)
     run_experiment_epsilon_dynamic(alpha = 0.05)
     run_experiment_initial_action_value()
+
 
