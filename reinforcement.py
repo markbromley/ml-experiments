@@ -295,8 +295,8 @@ def learning_procedure(learning = "sarsa",
                        epochs = 500,
                        episodes = 500):
     # Create the world
-    world_width = 6
-    world_height = 5
+    world_width = 5
+    world_height = 6
     size_s = world_width * world_height
     s = World(width = world_width, height = world_height)
     s.add_statetype_to_cell((2,1), StateType(StateType.FIRE))
@@ -329,6 +329,11 @@ def learning_procedure(learning = "sarsa",
 
     # Clear reward array
     rewards = [0.0 for episode in range(EPISODES)]
+    init_action_val_up = [0.0 for episode in range(EPISODES)]
+    init_action_val_down = [0.0 for episode in range(EPISODES)]
+    init_action_val_left = [0.0 for episode in range(EPISODES)]
+    init_action_val_right = [0.0 for episode in range(EPISODES)]
+
     for epochs in range(EPOCHS):
         agt_reset_value(s, avf)
         for episode in range(EPISODES):
@@ -352,8 +357,27 @@ def learning_procedure(learning = "sarsa",
                     next_s = env_move_sto(s,a)
 
                 r = env_reward(s, a, next_s)
+
+                # UP
+                cur_init_action_val_up = avf.get_expected_reward_value(s, Actions.up)
+                init_action_val_up[episode] += float(cur_init_action_val_up) / float(EPOCHS)
+
+                # DOWN
+                cur_init_action_val_down = avf.get_expected_reward_value(s, Actions.down)
+                init_action_val_down[episode] += float(cur_init_action_val_down) / float(EPOCHS)
+
+                # LEFT
+                cur_init_action_val_left = avf.get_expected_reward_value(s, Actions.left)
+                init_action_val_left[episode] += float(cur_init_action_val_left) / float(EPOCHS)
+
+                # RIGHT
+                cur_init_action_val_right = avf.get_expected_reward_value(s, Actions.right)
+                init_action_val_right[episode] += float(cur_init_action_val_right) / float(EPOCHS)
+
+
                 rewards[episode] += float(cumulative_gamma * r) / float(EPOCHS)
                 cumulative_gamma *= GAMMA
+
                 next_a = agt_choose(next_s, eps, avf)
 
                 # Update while learning
@@ -377,7 +401,8 @@ def learning_procedure(learning = "sarsa",
                        timestep == T - 1):
                     break
 
-    return rewards
+    init_action_vals = [init_action_val_up, init_action_val_down, init_action_val_left, init_action_val_right]
+    return rewards, init_action_vals
 
 def run_experiment_on_learning_variations(epsilon = 0.1, alpha = 0.1):
     """
@@ -419,7 +444,7 @@ def run_experiment_on_learning_variations(epsilon = 0.1, alpha = 0.1):
     all_results = [rewards_s_d, rewards_s_s, rewards_q_d, rewards_q_s]
     title = str(epsilon) + "-" + str(alpha)
     with open('results-' + title + '.txt', 'wb') as fp:
-        pickle.dump(itemlist, fp)
+        pickle.dump(all_results, fp)
 
 def run_experiment_epsilon_dynamic(alpha = 0.05):
     """
@@ -457,11 +482,32 @@ def run_experiment_epsilon_dynamic(alpha = 0.05):
     plt.xlabel('Episode')
     plt.legend(handles=[line_5, line_6, line_7, line_8])
     plt.show()
-    
+
     all_results = [rewards_s_d, rewards_s_s, rewards_q_d, rewards_q_s]
     title = str(epsilon) + "-" + str(alpha)
     with open('results-epsilon-dynamic-' + title + '.txt', 'wb') as fp:
-        pickle.dump(itemlist, fp)
+        pickle.dump(all_results, fp)
+
+def run_experiment_initial_action_value():
+    """
+    Shows plot for complete experiment.
+    """
+    rewards, init_action_vals = learning_procedure(learning = "q-learn", deterministic = True, 
+        epsilon = 0.1, alpha = 0.1)
+
+    up = init_action_vals[0]
+    down = init_action_vals[1]
+    left = init_action_vals[2]
+    right =init_action_vals[3]
+
+    line_1 = plt.plot(up, label='Up', lw=1, color='g')
+    line_2 = plt.plot(down, label='Down', lw=1, color='r')
+    line_3 = plt.plot(left, label='Left', lw=1, color='b')
+    line_4 = plt.plot(right, label='Right', lw=1, color='k')
+    plt.ylabel('Initial State Value Function Action')
+    plt.xlabel('Episode')
+    plt.legend(handles=[line_1, line_2, line_3, line_4])
+    plt.show()
 
 if __name__ == "__main__":
 
@@ -469,4 +515,5 @@ if __name__ == "__main__":
     run_experiment_on_learning_variations(epsilon = 0.1, alpha = 0.1)
     run_experiment_on_learning_variations(epsilon = 1, alpha = 1)
     run_experiment_epsilon_dynamic(alpha = 0.05)
+    run_experiment_initial_action_value()
 
