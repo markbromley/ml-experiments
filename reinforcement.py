@@ -10,7 +10,8 @@ import pickle
 
 class StateType(object):
     """
-    Represents the possible states in the grid world.
+    Represents the possible states in the grid world. Each state has a name
+    and associated reward value.
     """
     NONE = 0,
     FIRE = 1,
@@ -35,7 +36,8 @@ class StateType(object):
 
 class Actions(object):
     """
-    Represents the possible actions in the grid world.
+    Represents the possible actions in the grid world. For simplicity an
+    agent can move up, down, left and right.
     """
     def __init__(self):
         self._actions = Enum('Actions', 'up down left right')
@@ -60,7 +62,8 @@ class Actions(object):
     def get_orthogonal_action(action, direction = True):
         """
         Given a direction returns the orthogonal direction. Boolean flag 'direction'
-        switches which way the orthogonal direction is chosen.
+        switches which way the orthogonal direction is chosen e.g. 'left' or 'right' when
+        given direction 'up'
         """
         if action == Actions.up:
             if direction:
@@ -87,6 +90,9 @@ class Actions(object):
 
     @staticmethod
     def get_random_action():
+        """
+        Returns a random direction from those available.
+        """
         # Make deterministic
         # random.seed(1)
         # Random number between inclusive 1, 100
@@ -111,24 +117,31 @@ class ActionValueFunction(object):
 
     def add_state(self, state, action_rewards = {}):
         """
-        Warning! Overrides state if already exists.
+        Add a new environment state to the Action-value function.
         """
         self._action_val_fun[state] = action_rewards
 
     def update_action(self, state, action, reward):
         """
+        Updates the expected reward of a given action in a given state.
         """
         if not state in self._action_val_fun:
             self.add_state(state)
         self._action_val_fun[state][action] = reward
 
     def get_expected_reward_value(self, state, action):
+        """
+        Returns the expected reward for a given action in a given state.
+        """
         if state in self._action_val_fun:
             if action in self._action_val_fun[state]:
                 return self._action_val_fun[state][action]
         return 0
 
     def get_best_next_action(self, state):
+        """
+        Returns the best possible next action for a given state.
+        """
         up = self.get_expected_reward_value(state, Actions.up)
         down = self.get_expected_reward_value(state, Actions.down)
         left = self.get_expected_reward_value(state, Actions.left)
@@ -160,11 +173,9 @@ class World(object):
 
     def add_statetype_to_cell(self, cell_coord, state_type):
         """
-        N.B. Actually adds the reward of the statetype to cell as that's all
-        we're interested in.
-        cell_coord is the (x,y) coordinate.
+        N.B. Actually adds the reward of the state type to cell as that's all
+        we're interested in. Cell_coord is the (x,y) coordinate.
         """
-        print "State Value: {}".format(str(state_type.value))
         self._world[cell_coord[0]][cell_coord[1]] = state_type.value
 
     def get_reward_in_cell(self, cell_coord):
@@ -192,9 +203,13 @@ class World(object):
             _str += str(row) + "\n"
         return str(_str)
 
+
 # Required function signatures below here
 
 def env_move_det(s, a):
+    """
+    Move from state s using action a deterministically.
+    """
     flag = False
     s = copy.copy(s)
     if a == Actions.up:
@@ -217,10 +232,11 @@ def env_move_det(s, a):
 
 def env_move_sto(s, a):
     """ 
-    Follow the desired action 80 percent of time, performing orthogonal actions for
+    Move from state s using action a stochastically. Follow the desired 
+    action 80 percent of time, performing orthogonal actions for
     the other 20 percent of the time. 
     """
-    # Make deterministic
+    # Make stochastic decision deterministic
     # random.seed(1)
     # Random number between inclusive 1, 100
     val = random.randint(1,100)
@@ -243,6 +259,9 @@ def env_reward(s, a, next_s):
     return next_s.get_reward_in_cell(next_s.state)
 
 def agt_choose(s, epsilon, policy):
+    """
+    Chooses the agent's next action using an epsilon-greedy policy.
+    """
     # Make deterministic
     # random.seed(1)
     # Random number between inclusive 1, 100
@@ -256,6 +275,9 @@ def agt_choose(s, epsilon, policy):
         return policy.get_best_next_action(s.state)
 
 def agt_learn_sarsa(alpha, s, a, r, next_s, next_a, action_val_function, gamma = 0.99):
+    """
+    Updates using SARSA.
+    """
     action_val_function = copy.copy(action_val_function)
     q_state = action_val_function.get_expected_reward_value(s.state, a)
     q_state_next = action_val_function.get_expected_reward_value(next_s.state, next_a)
@@ -264,6 +286,9 @@ def agt_learn_sarsa(alpha, s, a, r, next_s, next_a, action_val_function, gamma =
     return action_val_function
 
 def agt_learn_q(alpha, s, a, r, next_s, action_val_function, gamma = 0.99):
+    """
+    Updates using Q-Learning.
+    """
     action_val_function = copy.copy(action_val_function)
     best_next_action = action_val_function.get_best_next_action(next_s.state)
     q_state = action_val_function.get_expected_reward_value(s.state, a)
@@ -273,11 +298,17 @@ def agt_learn_q(alpha, s, a, r, next_s, action_val_function, gamma = 0.99):
     return action_val_function
 
 def agt_learn_final(alpha, s, a, r, action_val_function):
+    """
+    Updates when in absorbing state.
+    """
     new_expected_reward = ((1 - alpha) * 0) + alpha * (r)
     action_val_function.update_action(s.state, a, new_expected_reward)
     return action_val_function
 
 def agt_reset_value(world, action_val_function):
+    """
+    Resets agent action value function.
+    """
     optimistic_val = 150
     for i in range(world.width - 1):
         for j in range(world.height -1):
@@ -294,6 +325,9 @@ def learning_procedure(learning = "sarsa",
                        gamma = 0.99, 
                        epochs = 500,
                        episodes = 500):
+    """
+    Runs the whole learning procedure for the agent.
+    """
     # Create the world
     world_width = 5
     world_height = 6
